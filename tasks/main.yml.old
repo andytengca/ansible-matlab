@@ -1,0 +1,135 @@
+--- # roles/matlab/tasks/main.yml
+
+## We update our cache here in case we are removing, reinstalling or purging
+
+#- name: update apt cache
+#  become: true
+#  apt: update_cache=yes cache_valid_time=43200
+#  tags: [ 'packages', 'matlab' ]
+
+- name: Install unzip (Ubuntu/Debian)
+  become: true
+  apt: pkg=unzip={{ unzip_version }} state=installed update_cache=no
+
+#- name: Install dependencies (Ubuntu/Debian)
+#  apt: name={{item}} state=present update_cache=yes
+#  become: true
+#  with_items: 
+#      - openjdk-7-jre-headless
+#      - libxt6 
+#      - libxtst6 
+#      - libxmu6
+#      - libxi6
+#  when: "ansible_os_family == 'Ubuntu'"
+
+#- name: Check whether MCR archive is present
+#  become: true
+#  stat: path={{ matlab_local_resource_directory }}/{{ matlab_mcr_archive_name }}
+#  register: available_archive
+
+## create group called 'aceusers' only vagrant testing, comment it in real life
+#- name: create usergroup - aceusers
+#  become: true
+#  group:
+#     name: aceusers
+#     state: present
+  
+- name: Create matlab package ISO directory
+  become: true
+  file: 
+    path: '{{ matlab_deployment_resource_path }}'
+    state: directory
+    owner: '{{ matlab_deployment_user }}'
+    group: '{{ matlab_deployment_user }}'
+    mode: 0770
+
+
+- name: Create matlab package installation directory
+  become: true
+  file:
+    path: '{{ matlab_installation_files_dir }}'
+    state: directory
+    owner: root
+    group: aceusers 
+    mode: 0750
+
+- name: Create matlab default_software_directory
+  become: true
+  file:
+    path: '{{ matlab_dir }}'
+    state: directory
+    owner: root
+    group: aceusers
+    mode: 0775
+
+#- name: Createy symlink to 
+
+
+# - name: Download Matlab image
+#  get_url: url={{ matlab_http_link }} dest={{ matlab_local_resource_path }}
+#  when: available_archive.stat.exists == false
+
+- name: Copy over matlab installation packages from local to remote hosts
+  become: true
+  copy:
+    src: '{{ matlab_local_resource_path }}/{{ matlab_package }}'
+    dest: '{{ matlab_deployment_resource_path }}'
+    owner: '{{ matlab_deployment_user }}'
+    group: '{{ matlab_deployment_user }}'
+    mode: 0750
+
+- name: Unarchive matlab installation package that is already on the remote hosts
+  become: true
+  unarchive:
+    src: '{{ matlab_deployment_resource_path }}/{{ matlab_package }}'
+    dest: '{{ matlab_installation_files_dir }}'
+    remote_src: yes
+    group: aceusers
+    mode: 0750
+  register: matlab_package_unarchived
+
+- name: Change /var/tmp/matlab permisson
+  become: true
+  file:
+    path: /var/tmp/matlab/R2017b/
+    group: aceusers
+    mode: 0750
+    recurse: yes
+
+## Customize MCR installer configuration file
+
+#- name: Customize MCR installer configuration file
+#  become: true  
+#  lineinfile: dest={{ item.dest }} regexp={{ item.regexp }} line={{ item.line }}
+#  with_items:
+#     - { dest: '{{ matlab_install_dir }}/installer_input.txt', regexp: '^"# mode"', line: 'mode=silent' }
+#     - { dest: '{{ matlab_install_dir }}/installer_input.txt', regexp: '^"# agreeToLicense"', line: 'agreeToLicense=yes' }
+#     - { dest: '{{ matlab_install_dir }}/installer_input.txt', regexp: '^"# fileInstallationKey"', line: 'fileInstallationKey=XXXXXXXXXXXXXXXXXX'}
+#     - { dest: '{{ matlab_install_dir }}/installer_input.txt', regexp: '^"# destinationFolder"', line: 'destinationFolder={{ matlab_install_dir }}' }
+#     - { dest: '{{ matlab_install_dir }}/installer_input.txt', regexp: '^#product.MATLAB', line: 'product.MATLAB' }
+#     - { dest: '{{ matlab_install_dir }}/installer_input.txt', regexp: '^#product.Simulink', line: 'product.Simulink' }
+
+
+#- lineinfile:
+#    dest: '{{ matlab_install_dir }}/installer_input.txt'
+#    regexp: '^##product.MATLAB'
+#    line: 'product.MATLAB'
+#    backrefs: yes
+
+## Run matlab installer, but still not workable at this point
+
+#- name: Run Matlab MCR installer
+#  become: true
+#  command: chdir={{ matlab_install_archive_dir }} ./install -inputFile {{ matlab_install_archive_dir }}/installer_input.txt
+#  register: matlab_mcr_installed
+
+#- name: Cleanup installation files
+#  become: true
+#  file: path={{ item }} state=absent
+#  with_items:
+#     - "{{ matlab_install_archive_dir }}"
+#     - "/tmp/mathworks_root.log"
+#when: matlab_mcr_installed.stdout.find("End - Successful") != -1
+
+
+

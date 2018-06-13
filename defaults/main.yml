@@ -1,0 +1,35 @@
+---
+# roles/matlab/defaults/main.yml
+
+matlab_debug : false
+
+matlab_controller_user           : '{{ project_controller_user_name }}'
+matlab_controller_home           : '{{ project_controller_user_home }}'
+matlab_controller_resource_home : '{{ project_controller_resources_home }}'
+
+matlab_deployment_user           : '{{ project_deployment_user_name }}'
+matlab_deployment_home           : '{{ project_deployment_user_home }}'
+matlab_deployment_resource_home : '{{ project_deployment_resources_home }}'
+
+
+
+## Package #
+
+unzip_version: "6.0*"
+
+matlab_package_state    : 'present'
+matlab_version          : 'R2018a'
+matlab_package          : 'matlab_{{ matlab_version }}_glnxa64.zip'
+
+matlab_local_resource_dir   : '{{ matlab_controller_resource_home }}/{{ ansible_distribution | lower}}/{{ ansible_distribution_version }}/matlab'
+matlab_local_resource_path        : '{{ matlab_local_resource_dir }}/{{ matlab_version }}'
+matlab_deployment_resource_dir  : '{{ matlab_deployment_resource_home }}/{{ ansible_distribution | lower }}/{{ ansible_distribution_version }}/matlab'
+matlab_deployment_resource_path    : '{{ matlab_deployment_resource_dir }}/{{ matlab_version }}'
+
+
+matlab_dir: '/usr/local/MATLAB/{{ matlab_version }}'
+matlab_installation_files_dir: '/var/tmp/matlab/{{ matlab_version }}'
+
+owner: 'root'
+group: 'aceusers'
+

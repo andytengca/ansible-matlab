@@ -1,0 +1,69 @@
+--- # roles/matlab/tasks/main.yml
+
+
+## We update our cache here in case we are removing, reinstalling or purging
+
+- name: update apt cache
+  become: true
+  apt: update_cache=yes cache_valid_time=43200
+  tags: [ 'packages', 'matlab' ]
+
+- name: Install unzip (Ubuntu/Debian)
+  become: true
+  apt: pkg=unzip={{ unzip_version }} 
+       state=present 
+       update_cache=no
+  
+- name: Create matlab package ISO directory
+  become: true
+  file: 
+    path: '{{ matlab_deployment_resource_path }}'
+    state: directory
+    owner: '{{ matlab_deployment_user }}'
+    group: '{{ matlab_deployment_user }}'
+    mode: 0770
+
+- name: Create matlab package installation directory
+  become: true
+  file:
+    path: '{{ matlab_installation_files_dir }}'
+    state: directory
+    owner: '{{ owner }}'
+    group: '{{ group }}'
+    mode: 0750
+
+- name: Create matlab default_software_directory
+  become: true
+  file:
+    path: '{{ matlab_dir }}'
+    state: directory
+    owner: '{{ owner }}'
+    group: '{{ group }}'
+    mode: 0775
+
+- name: Copy over the installation packages to remote host    
+  copy:
+    src: '{{ matlab_local_resource_path }}/{{ matlab_package }}'
+    dest: '{{ matlab_deployment_resource_path }}'
+    owner: '{{ matlab_deployment_user }}'
+    group: '{{ matlab_deployment_user }}'
+    mode: 0750
+
+- name: Unarchive matlab installation package that is already on the remote hosts
+  become: true
+  unarchive:
+    src: '{{ matlab_deployment_resource_path }}/{{ matlab_package }}'
+    dest: '{{ matlab_installation_files_dir }}'
+    remote_src: yes
+    group: aceusers
+    mode: 0750
+  register: matlab_package_unarchived
+
+- name: Change /var/tmp/matlab permisson
+  become: true
+  file:
+    path: /var/tmp/matlab/R2017b/
+    group: aceusers
+    mode: 0750
+    recurse: yes
+

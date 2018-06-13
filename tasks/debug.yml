@@ -1,0 +1,35 @@
+--- # roles/matlab/tasks/debug.yml
+
+
+- debug: var=matlab_controller_user
+- debug: var=matlab_controller_home
+- debug: var=matlab_controller_resources_home
+
+- debug: var=matlab_deployment_user
+- debug: var=matlab_deployment_home
+- debug: var=matlab_deployment_resources_home
+
+#- debug: var=matlab_major
+#- debug: var=matlab_moderate_revision
+#- debug: var=matlab_minor_revision
+#- debug: var=matlab_build
+
+## Package #
+
+- debug: var=matlab_package_state
+- debug: var=matlab_package_version
+- debug: var=matlab_package_filename
+
+# Resources
+
+- debug: var=matlab_package_url
+- debug: var=matlab_checksum_url
+- debug: var=matlab_checksum_sig_url
+
+- debug: var=matlab_controller_resources_dir
+- debug: var=matlab_deployment_resources_dir
+
+# Directories
+
+- debug: var=matlab_ensure_dirs_on_remote
+- debug: var=matlab_ensure_dirs_on_local

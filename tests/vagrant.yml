@@ -1,0 +1,145 @@
+--- # roles/matlab/tests/vagrant.yml
+
+- hosts: all
+  remote_user: ubuntu
+  become: false
+  gather_facts: true
+  pre_tasks:
+
+
+    - set_fact: fact_controller_user="{{ lookup('env','USER') }}"
+    - debug: var=fact_controller_user
+
+    - set_fact: fact_controller_home="{{ lookup('env','HOME') }}"
+    - debug: var=fact_controller_home
+
+    - set_fact: fact_role_path="{{ lookup('pipe','pwd')|dirname }}"
+    - debug: var=fact_role_path
+
+#    - set_fact: fact_role_name="{{ lookup('pipe','pwd')|dirname|basename }}"
+#    - debug: var=fact_role_name2
+
+  vars:
+
+# project_vars usually from group_vars/all/defaults.yml repeated here as not inlcuded in tests
+
+## controller user vars
+
+    - project_controller_user_name      : '{{ fact_controller_user }}'
+    - project_controller_user_home      : '{{ fact_controller_home }}'
+    - project_controller_resources_home : '{{ project_controller_user_home }}'
+
+
+## deployment user vars
+
+    - project_deployment_user_name      : 'ubuntu'
+    - project_deployment_user_home      : '/home/{{ project_deployment_user_name }}'
+    - project_deployment_resources_home : '{{ project_deployment_user_home }}'
+
+# standard vars start here ####################################################
+
+    - matlab_debug : 'true'
+
+    - matlab_controller_user           : '{{ project_controller_user_name }}'
+    - matlab_controller_home           : '{{ project_controller_user_home }}'
+    - matlab_controller_resources_home : '{{ project_controller_resources_home }}'
+
+    - matlab_deployment_user           : '{{ project_deployment_user_name }}'
+    - matlab_deployment_home           : '{{ project_deployment_user_home }}'
+    - matlab_deployment_resources_home : '{{ project_deployment_resources_home }}'
+
+# Help file
+
+    - matlab_acemenu_help_file_template_path: '/templates/bin/acemenu/help/example_aceadmin_helpfile.md.j2'
+
+## atomic versioning example
+#
+#    - matlab_major             : '0'
+#    - matlab_moderate_revision : '0'
+#    - matlab_minor_revision    : '1'
+#    - matlab_build             : ''
+
+## Package
+    - matlab_package_state   : 'present'
+    - matlab_package_version : '2.0.1'
+    - matlab_package_name    : "vagrant_{{ matlab_package_version }}_i686.deb"
+
+    - matlab_controller_resources_dir : '{{ matlab_controller_resources_home }}/src/sw/vagrant/debs'
+    - matlab_deployment_resources_dir : '{{ matlab_deployment_resources_home }}/src/sw/vagrant/debs'
+
+    - unzip_version: "6.0*"
+
+    - matlab_package_state    : 'present'
+    - matlab_version  : 'R2017b'
+    - matlab_package     : 'matlab_{{ matlab_version }}_glnxa64.zip'
+#    - matlab_runtime_package: 'MCR_{{ matlab_version }}_glnxa64_installer.zip'
+#    - matlab_http_link: 'http://ssd.mathworks.com/supportfiles/downloads/{{ matlab_version }}/deployment_files/{{ matlab_version }}/installers/glnxa64/{{ matlab_runtime_package }}'
+    - matlab_local_resource_path: '{{ matlab_local_resource_dir }}/{{ matlab_version }}'
+    - matlab_deployment_resource_dir  : '{{ matlab_deployment_home }}/sw/ubuntu/{{ ansible_distribution_version }}/matlab'
+    - matlab_deployment_resource_path    : '{{ matlab_deployment_resource_dir }}/{{ matlab_version }}'
+
+#download_dir: '/var/tmp'
+    - matlab_dir: '/usr/local/MATLAB/{{ matlab_version }}'
+#    - matlab_install_dir: '/opt/matlab/{{ matlab_version }}'
+    - matlab_install_dir: '/var/tmp/archive/matlab/{{ matlab_version }}'
+
+# Resource URLs
+
+    - matlab_package_url      : "https://releases.hashicorp.com/vagrant/2.0.1/vagrant_2.0.1_i686.deb"
+#    - matlab_checksum_url     : "https://releases.hashicorp.com/vagrant/2.0.1/ vagrant_2.0.1_SHA256SUMS"
+#    - matlab_checksum_sig_url : "https://releases.hashicorp.com/vagrant/2.0.1/ vagrant_2.0.1_SHA256SUMS.sig"
+
+
+# Directories
+
+    - matlab_ensure_dirs_on_remote:
+
+        matlab_remote_dir_01:
+
+          state       : "directory"
+          path        : '{{ matlab_deployment_resources_dir }}'
+          owner       : '{{ matlab_deployment_user }}'
+          group       : '{{ matlab_deployment_user }}'
+          mode        : '0755'
+          recursive   : True
+
+        matlab_remote_dir_02:
+
+          state       : "absent"
+          path        : "ensure_dirs_test_2"
+          owner       : '{{ matlab_deployment_user }}'
+          group       : '{{ matlab_deployment_user }}'
+          mode        : "0755"
+
+# ensure_dirs_on_local: []
+
+    - matlab_ensure_dirs_on_local:
+
+        matlab_local_dir_001:
+
+          state       : "absent"
+          path        : "ensure_dirs_test_3"
+          owner       : "{{ matlab_controller_user }}"
+          group       : "{{ matlab_controller_user }}"
+          mode        : "0755"
+
+        matlab_local_dir_002:
+
+          state       : "directory"
+          path        : "{{ matlab_controller_resources_dir }}"
+          owner       : "{{ matlab_controller_user }}"
+          group       : "{{ matlab_controller_user }}"
+          mode        : "0755"
+          recursive   : True
+
+    - fetch_skel_entries:
+
+        - name : "ensure for acemenu help file for fetch"
+          src:  ''
+          path : '/etc/skel/bin/acemenu/help/fetch.md'
+          force : no
+          state: 'copy'
+
+  roles:
+
+    - ../../

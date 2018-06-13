@@ -1,0 +1,71 @@
+---
+# roles/matlab/defaults/main.yml
+
+matlab_debug : false
+
+matlab_controller_user           : '{{ project_controller_user_name }}'
+matlab_controller_home           : '{{ project_controller_user_home }}'
+matlab_controller_resource_home : '{{ project_controller_resources_home }}'
+
+matlab_deployment_user           : '{{ project_deployment_user_name }}'
+matlab_deployment_home           : '{{ project_deployment_user_home }}'
+matlab_deployment_resource_home : '{{ project_deployment_resources_home }}'
+
+
+
+## Package #
+
+unzip_version: "6.0*"
+
+matlab_package_state    : 'present'
+matlab_version          : 'R2018a'
+matlab_package          : 'matlab_{{ matlab_version }}_glnxa64.zip'
+#matlab_runtime_package : 'MCR_{{ matlab_version }}_glnxa64_installer.zip'
+#matlab_http_link       : 'http://ssd.mathworks.com/supportfiles/downloads/{{ matlab_version }}/deployment_files/{{ matlab_version }}/installers/glnxa64/{{ matlab_runtime_package }}'
+
+matlab_local_resource_dir   : '{{ matlab_controller_resource_home }}/{{ ansible_distribution | lower}}/{{ ansible_distribution_version }}/matlab'
+matlab_local_resource_path        : '{{ matlab_local_resource_dir }}/{{ matlab_version }}'
+matlab_deployment_resource_dir  : '{{ matlab_deployment_resource_home }}/{{ ansible_distribution | lower }}/{{ ansible_distribution_version }}/matlab'
+matlab_deployment_resource_path    : '{{ matlab_deployment_resource_dir }}/{{ matlab_version }}'
+
+
+matlab_dir: '/usr/local/MATLAB/{{ matlab_version }}'
+matlab_installation_files_dir: '/var/tmp/matlab/{{ matlab_version }}'
+
+owner: 'root'
+group: 'aceusers'
+
+
+# Help file
+
+#matlab_acemenu_help_file_template_path: '/templates/bin/acemenu/help/example_aceadmin_helpfile.md.j2'
+
+
+# Directories
+matlab_dirs_on_local:
+
+  matlab_local_resources_dir:
+
+    state       : 'directory'
+    path        : '{{ matlab_controller_resource_dir }}'
+    owner       : '{{ matlab_controller_user }}'
+    group       : '{{ matlab_controller_user }}'
+    mode        : '0755'
+
+matlab_dirs_on_remote:
+
+  matlab_remote_resource_dir:
+
+    state          : 'directory'
+    path           : '{{ matlab_deployment_resource_dir }}'
+    owner          : '{{ matlab_deployment_user }}'
+    group          : '{{ matlab_deployment_user }}'
+    mode           : '0755'
+
+matlab_skel_entries:
+
+  - name : "ensure for acemenu help file for matlab"
+    src:  '{{ matlab_acemenu_help_file_template_path }}'
+    path : '/etc/skel/bin/acemenu/help/matlab.md'
+    force : no
+    state: 'copy'

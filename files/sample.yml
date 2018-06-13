@@ -1,0 +1,68 @@
+---
+
+# from hmsrc/lccb-ansible
+
+- hosts: all
+  gather_facts: yes
+  user: root
+  tasks:
+    - name:  create /usr/local/MATLAB
+      tages: matlab
+      file: path=/usr/local/MATLAB 
+      owner: root
+      group: root
+      mode=0755
+      state=directory
+
+    - name: rsync matlab from danuser-wkstn1
+      command: rsync -a danuser-wkstn1::precise/usr/local/MATLAB/R2013b/ /usr/local/MATLAB/R2013b/
+
+    - name: copy desktop shortcut to /usr/local
+      copy: src=/home/precise/usr/local/MATLAB/mathworks-matlabR2013b.desktop 
+            dest=/usr/local/MATLAB/mathworks-matlabR2013b.desktop 
+            owner=root 
+            group=root 
+            mode=644
+
+    - name: copy desktop shortcut to /usr/share/applications/
+      copy: src=/home/precise/usr/local/MATLAB/mathworks-matlabR2013b.desktop 
+            dest=/usr/share/applications/mathworks-matlabR2013b.desktop 
+            owner=root group=root mode=644
+
+    - name: create symlink for matlab 2013b
+      file: src=/usr/local/MATLAB/R2013b/bin/matlab 
+            dest=/usr/local/bin/matlab_r2013b 
+            owner=root group=root state=link
+
+    - name: synchronize matlab from danuser-wkstn1
+      tags: matlab
+      synchronize: src=/home/precise/usr/local/MATLAB/{{ item }}/ dest=/usr/local/MATLAB/{{ item }}/ archive=yes rsync_timeout=60
+       with_items: keep_matlab_versions
+
+    - name: create symlink for matlab
+      tags: matlab
+      file: src=/usr/local/MATLAB/{{ item }}/bin/matlab dest=/usr/local/bin/matlab_{{ item|lower }} owner=root group=root state=link
+      with_items: keep_matlab_versions
+
+    - name: template desktop shortcut to /usr/share/applications/
+      tags: matlab
+      template: src=usr/share/applications/mathworks-matlab.desktop.j2 dest=/usr/share/applications/mathworks-matlab{{ item }}.desktop owner=root group=root mode=0444
+      with_items: keep_matlab_versions
+
+
+#- name: delete symlink
+#  tags: matlab
+#  file: path=/usr/local/bin/matlab_{{ item|lower }} state=absent
+#  with_items: remove_matlab_versions
+
+#- name: delete desktop shortcut
+#  tags: matlab
+#  file: path=/usr/share/applications/mathworks-matlab{{ item }}.desktop state=absent
+#  with_items: remove_matlab_versions
+
+#- name: delete files
+#  tags: matlab
+#  file: path=/usr/local/MATLAB/{{ item }}/ state=absent
+#  with_items: remove_matlab_versions
+
+

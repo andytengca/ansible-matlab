@@ -1,0 +1,38 @@
+--- #roles/matlab/meta/main.yml
+
+dependencies:
+
+#  - role: ensure_dirs
+#    tags: ['matlab', 'ensure_dirs']
+#    ensure_dirs_on_remote: '{{ matlab_ensure_dirs_on_remote }}'
+#    ensure_dirs_on_local : '{{ matlab_ensure_dirs_on_local }}'
+
+#  - role: acemenu
+
+#  - role: skel
+#    become: true
+#    tags: ['matlab', 'skel']
+#    skel_entries: '{{ matlab_skel_entries }}'
+
+#galaxy_info:
+#  author: 'Christopher Steel'
+#  description: 'matlab is used to...'
+#  company: 'McGill Centre for Integrative Neuroscience'
+#  license: MIT
+#  min_ansible_version: '1.7.1'
+
+#  platforms:
+#    - name: Ubuntu
+#      versions:
+#        - xenial
+#    - name: Debian
+#      versions:
+#        - wheezy
+#        - jessie
+
+# galaxy_tags:
+#    - mcin
+#    - matlab
+#    - package
+    # NOTE: A tag is limited to a single word comprised of
+    # alphanumeric characters. Maximum 20 tags per role.

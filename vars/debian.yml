@@ -1,0 +1,4 @@
+--- # roles/matlab/vars/debian.yml
+
+# Debian specific vars
+matlab_package_extension: 'deb'
